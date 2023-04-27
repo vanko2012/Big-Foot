@@ -8,6 +8,8 @@ namespace big_foot.Data
 
         public string Name { get; set; }
 
+        public string Gender { get; set; }
+
         [Column(TypeName = "decimal(10, 2)")]
         public decimal Price { get; set; }
 
@@ -17,7 +19,9 @@ namespace big_foot.Data
         //M:1
         public int CategoryId { get; set; }
         public Category Categories { get; set; }
-        
+
+        public string ImageURL { get; set; }
+
         public DateTime Register_On { get; set; }
         public ICollection<Product> Products { get; set; }
 

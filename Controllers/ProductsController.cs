@@ -47,7 +47,7 @@ namespace big_foot.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
@@ -56,7 +56,7 @@ namespace big_foot.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,Description,Size,CategoryId,Register_On")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Gender,Price,Description,Size,CategoryId,ImageURL,Register_On")] Product product)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +64,7 @@ namespace big_foot.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Name", "Name", product.CategoryId);
             return View(product);
         }
 
@@ -90,7 +90,7 @@ namespace big_foot.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Description,Size,CategoryId,Register_On")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Gender,Price,Description,Size,CategoryId,ImageURL,Register_On")] Product product)
         {
             if (id != product.Id)
             {
@@ -161,7 +161,7 @@ namespace big_foot.Controllers
 
         private bool ProductExists(int id)
         {
-          return _context.Products.Any(e => e.Id == id);
+          return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

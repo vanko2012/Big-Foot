@@ -12,14 +12,14 @@ using big_foot.Data;
 namespace big_foot.Migrations
 {
     [DbContext(typeof(BigfootDbContext))]
-    [Migration("20230223071533_Vanko")]
-    partial class Vanko
+    [Migration("20230403141448_bigfoot")]
+    partial class bigfoot
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.11")
+                .HasAnnotation("ProductVersion", "6.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -126,11 +126,7 @@ namespace big_foot.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductsId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Register_On")
@@ -140,7 +136,7 @@ namespace big_foot.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("ProductsId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Orders");
                 });
@@ -157,6 +153,10 @@ namespace big_foot.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -332,7 +332,7 @@ namespace big_foot.Migrations
 
                     b.HasOne("big_foot.Data.Product", "Products")
                         .WithMany()
-                        .HasForeignKey("ProductsId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

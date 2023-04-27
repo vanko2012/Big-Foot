@@ -14,5 +14,10 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-image: url(https://i.pinimg.com/originals/46/d1/5f/46d15fb0113ad6eb507d7bf4a1bcecdf.jpg);
+    background-size: cover;
+}
+.transparent11 {
+    background: rgba(1,1,1,0.2);
 }

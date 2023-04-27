@@ -18,7 +18,11 @@ namespace big_foot.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult AboutUs()
+        {
+            return View();
+        }
+        public IActionResult Contacts()
         {
             return View();
         }

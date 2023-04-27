@@ -6,23 +6,38 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using big_foot.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace big_foot.Controllers
 {
+    [Authorize]
     public class OrdersController : Controller
     {
         private readonly BigfootDbContext _context;
+        private readonly UserManager<Customer> _userManager;
 
-        public OrdersController(BigfootDbContext context)
+        public OrdersController(BigfootDbContext context,UserManager<Customer> userManager)
         {
+            _userManager = userManager;
             _context = context;
         }
 
         // GET: Orders
         public async Task<IActionResult> Index()
         {
-            var bigfootDbContext = _context.Orders.Include(o => o.Customers);
-            return View(await bigfootDbContext.ToListAsync());
+            if (User.IsInRole("Admin"))
+            {
+                var BigfootDbContext = _context.Orders.Include(o => o.Products).Include(o => o.Customers);
+                return View(await BigfootDbContext.ToListAsync());
+            }
+            else
+            {
+                var currentUser = _userManager.GetUserId(User);
+                var BigfootDbContext = await _context.Orders.Include(o => o.Products).Include(o => o.Customers)
+                     .Where(x => x.CustomerId == currentUser.ToString()).ToListAsync();
+                return View(BigfootDbContext);
+            }
         }
 
         // GET: Orders/Details/5
@@ -35,6 +50,7 @@ namespace big_foot.Controllers
 
             var order = await _context.Orders
                 .Include(o => o.Customers)
+                .Include(o => o.Products)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (order == null)
             {
@@ -43,28 +59,40 @@ namespace big_foot.Controllers
 
             return View(order);
         }
-
+        [HttpPost]
+        public async Task<IActionResult> CreateWithProductId(int productId)
+        {
+            Order order = new Order();
+            order.ProductId = productId;
+            order.Register_On = DateTime.Now;
+            order.CustomerId = _userManager.GetUserId(User);
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
         // GET: Orders/Create
         public IActionResult Create()
         {
-            ViewData["CustomerId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Id");
             return View();
         }
 
         // POST: Orders/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ProductId,CustomerId,Register_On")] Order order)
+        public async Task<IActionResult> Create([Bind("ProductId,Register_On")] Order order)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(order);
+                order.CustomerId = _userManager.GetUserId(User);
+                _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CustomerId"] = new SelectList(_context.Users, "Id", "Id", order.CustomerId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name", order.ProductId);
             return View(order);
         }
 
@@ -81,7 +109,8 @@ namespace big_foot.Controllers
             {
                 return NotFound();
             }
-            ViewData["CustomerId"] = new SelectList(_context.Users, "Id", "Id", order.CustomerId);
+            ViewData["CustomerId"] = new SelectList(_context.Users, "Id", "UserName", order.CustomerId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Id", order.ProductId);
             return View(order);
         }
 
@@ -117,7 +146,8 @@ namespace big_foot.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CustomerId"] = new SelectList(_context.Users, "Id", "Id", order.CustomerId);
+            ViewData["CustomerId"] = new SelectList(_context.Users, "Id", "UserName", order.CustomerId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Id", order.ProductId);
             return View(order);
         }
 
@@ -131,6 +161,7 @@ namespace big_foot.Controllers
 
             var order = await _context.Orders
                 .Include(o => o.Customers)
+                .Include(o => o.Products)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (order == null)
             {
@@ -161,7 +192,7 @@ namespace big_foot.Controllers
 
         private bool OrderExists(int id)
         {
-          return _context.Orders.Any(e => e.Id == id);
+          return (_context.Orders?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
